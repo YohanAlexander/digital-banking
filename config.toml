@@ -4,7 +4,7 @@ contextTimeout="2"
 [server]
   address= ":8080"
 [database]
-  host="localhost"
+  host="mysql"
   port="3306"
   user="root"
   pass="root"
