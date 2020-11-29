@@ -1,24 +1,24 @@
 package app
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/yohanalexander/desafio-banking-go/pkg/config"
 	"github.com/yohanalexander/desafio-banking-go/pkg/db"
+	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
 )
 
-// App encapsula a conexão com o banco e configurações
+// App armazena configurações usadas em toda a API
 type App struct {
 	DB  *db.DB
 	Cfg *config.Config
 }
 
-// Get retorna struct App para a API
-func Get() (*App, error) {
-	cfg := config.Get()
-	db, err := db.Get(cfg.GetDBConnStr())
+// GetApp captura variáveis de ambiente e conecta ao DB
+func GetApp() (*App, error) {
+	cfg := config.GetConfig()
+	db, err := db.GetDB(cfg.GetDBConnStr())
 
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Error.Fatal(err.Error())
 		return nil, err
 	}
 

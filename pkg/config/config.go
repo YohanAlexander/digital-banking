@@ -3,13 +3,13 @@ package config
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
 )
 
-// Config struct encapsula as variaveis de ambiente
+// Config armazena as variáveis de ambiente
 type Config struct {
-	address string
+	apiPort string
 	dbUser  string
 	dbPass  string
 	dbHost  string
@@ -18,8 +18,8 @@ type Config struct {
 	debug   string
 }
 
-// Get obtem os valores das variaveis de ambiente
-func Get() *Config {
+// GetConfig captura os valores das variáveis de ambiente
+func GetConfig() *Config {
 	conf := &Config{}
 
 	conf.debug = viper.GetString(`DEBUG_MODE`)
@@ -28,23 +28,22 @@ func Get() *Config {
 	conf.dbUser = viper.GetString(`POSTGRES_USER`)
 	conf.dbPass = viper.GetString(`POSTGRES_PASSWORD`)
 	conf.dbName = viper.GetString(`POSTGRES_DB`)
-	conf.address = viper.GetString(`SERVER_ADDRESS`)
+	conf.apiPort = viper.GetString(`SERVER_ADDRESS`)
 
 	if conf.debug == "true" {
-		logrus.SetLevel(logrus.DebugLevel)
-		logrus.Warn("Banking service is Running in Debug Mode")
+		logger.Info.Println("Banking service is Running in Debug Mode")
 	} else {
-		logrus.SetLevel(logrus.InfoLevel)
-		logrus.Warn("Banking service is Running in Production Mode")
+		logger.Info.Println("Banking service is Running in Production Mode")
 	}
 	return conf
 }
 
-// GetDBConnStr formata a string da conexão
+// GetDBConnStr retorna a string da conexão com DB formatada
 func (c *Config) GetDBConnStr() string {
 	return c.getDBConnStr(c.dbHost, c.dbName)
 }
 
+// getDBConnStr formata a string da conexão com DB
 func (c *Config) getDBConnStr(dbhost, dbname string) string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
@@ -54,4 +53,9 @@ func (c *Config) getDBConnStr(dbhost, dbname string) string {
 		c.dbPort,
 		dbname,
 	)
+}
+
+// GetAPIPort retorna a porta do servidor da API
+func (c *Config) GetAPIPort() string {
+	return ":" + c.apiPort
 }

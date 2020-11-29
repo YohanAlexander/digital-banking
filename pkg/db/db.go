@@ -5,19 +5,19 @@ import (
 
 	// import do driver Postgres
 	_ "github.com/lib/pq"
-	"github.com/sirupsen/logrus"
+	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
 )
 
-// DB struct armazena a conexão com o banco
+// DB armazena a conexão com o banco de dados
 type DB struct {
 	Client *sql.DB
 }
 
-// Get retorna a conexão com o banco
-func Get(connStr string) (*DB, error) {
-	db, err := get(connStr)
+// GetDB retorna a conexão com o banco de dados
+func GetDB(connStr string) (*DB, error) {
+	db, err := getDB(connStr)
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 
@@ -26,21 +26,22 @@ func Get(connStr string) (*DB, error) {
 	}, nil
 }
 
-// Close fecha a conexão com o banco
-func (db *DB) Close() error {
+// CloseDB fecha a conexão com o banco de dados
+func (db *DB) CloseDB() error {
 	return db.Client.Close()
 }
 
-func get(connStr string) (*sql.DB, error) {
+// getDB estabelece a conexão com o banco de dados
+func getDB(connStr string) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 	err = db.Ping()
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 
