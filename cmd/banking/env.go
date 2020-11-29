@@ -10,7 +10,7 @@ func InitENV() {
 	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 
 	viper.SetConfigType("toml")
-	viper.SetConfigFile("config.toml")
+	viper.SetConfigFile(".config.toml")
 	err := viper.ReadInConfig()
 	if err != nil {
 		logrus.Fatal(err)
