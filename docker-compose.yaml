@@ -1,36 +1,39 @@
 version: "3.8"
+
+volumes:
+  banking-volume:
+    name: banking-volume
+
+networks:
+  banking-network:
+    name: banking-network
+
 services:
+  db:
+    image: postgres:12.0
+    restart: on-failure
+    container_name: banking_db
+    env_file:
+      - .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - banking-volume:/var/lib/postgresql/data
+    networks:
+      - banking-network
+
   web:
     build:
       context: .
+      target: ${BUILD_TARGET}
     container_name: banking_api
-    restart: always
+    env_file:
+      - .env
     ports:
-      - 8080:8080
+      - ${SERVER_ADDRESS}:${SERVER_ADDRESS}
     depends_on:
-      - mysql
+      - db
     volumes:
       - ./:/app
-  mysql:
-    image: mysql:5.7
-    container_name: banking_mysql
-    restart: always
-    command: mysqld --user=root --default-authentication-plugin=mysql_native_password
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p$$MYSQL_ROOT_PASSWORD",
-        ]
-      timeout: 5s
-      retries: 10
+    networks:
+      - banking-network

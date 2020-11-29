@@ -5,7 +5,7 @@ endif
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o banking cmd/main.go
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o banking cmd/banking/main.go
 
 .PHONY: run
 run:
