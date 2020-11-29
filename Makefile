@@ -1,9 +1,20 @@
-BINARY=banking
+ifndef $(GOPATH)
+    GOPATH=$(shell go env GOPATH)
+    export GOPATH
+endif
 
+.PHONY: build
 build:
-	go build -o ${BINARY} github.com/yohanalexander/desafio-banking-go/cmd
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o banking cmd/main.go
 
-clean:
-	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+.PHONY: run
+run:
+	@docker-compose up -d --build
 
-.PHONY: clean
+.PHONY: stop
+stop:
+	@docker-compose down
+
+.PHONY: logs
+logs:
+	@docker-compose logs -f

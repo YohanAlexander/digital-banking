@@ -2,7 +2,7 @@ title="Configuration File for Banking"
 debug=true
 contextTimeout="2"
 [server]
-  address= ":8080"
+  address=":8080"
 [database]
   host="mysql"
   port="3306"
