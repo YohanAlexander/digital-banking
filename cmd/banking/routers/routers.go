@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
+	haccounts "github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/accounts"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/hello"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 )
@@ -39,8 +40,8 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.Wrap(accountsRoutes),
 	))
 	accounts := accountsRoutes.Path("/accounts").Subrouter()
-	accounts.Methods("GET").HandlerFunc(hello.HandlerHello(app))
-	accounts.Methods("POST").HandlerFunc(hello.HandlerHello(app))
+	accounts.Methods("GET").HandlerFunc(haccounts.ListAccounts(app))
+	accounts.Methods("POST").HandlerFunc(haccounts.PostAccount(app))
 
 	// rota de balance
 	balanceRoutes := mux.NewRouter()
@@ -48,7 +49,7 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.Wrap(balanceRoutes),
 	))
 	balance := balanceRoutes.Path("/accounts/{id}/balance").Subrouter()
-	balance.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	balance.Methods("GET").HandlerFunc(haccounts.BalanceAccount(app))
 
 	// rota de transfers
 	transfersRoutes := mux.NewRouter()
