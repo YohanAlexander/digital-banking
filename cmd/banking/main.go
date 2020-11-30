@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/spf13/viper"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/accounts"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/transfers"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/routers"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 	"github.com/yohanalexander/desafio-banking-go/pkg/exit"
@@ -23,6 +25,9 @@ func main() {
 	if err != nil {
 		logger.Info.Fatal(err.Error())
 	}
+
+	// migrando os schemas do DB
+	app.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
 
 	srv := server.
 		GetServer().
