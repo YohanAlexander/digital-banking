@@ -1,16 +1,14 @@
 package db
 
 import (
-	"database/sql"
-
-	// import do driver Postgres
-	_ "github.com/lib/pq"
 	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // DB armazena a conexão com o banco de dados
 type DB struct {
-	Client *sql.DB
+	Client *gorm.DB
 }
 
 // GetDB retorna a conexão com o banco de dados
@@ -28,18 +26,28 @@ func GetDB(connStr string) (*DB, error) {
 
 // CloseDB fecha a conexão com o banco de dados
 func (db *DB) CloseDB() error {
-	return db.Client.Close()
+	sqlDB, err := db.Client.DB()
+	if err != nil {
+		logger.Info.Fatal(err.Error())
+		return err
+	}
+	return sqlDB.Close()
 }
 
 // getDB estabelece a conexão com o banco de dados
-func getDB(connStr string) (*sql.DB, error) {
+func getDB(connStr string) (*gorm.DB, error) {
 
-	db, err := sql.Open("postgres", connStr)
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
 		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
-	err = db.Ping()
+	sqlDB, err := db.DB()
+	if err != nil {
+		logger.Info.Fatal(err.Error())
+		return nil, err
+	}
+	err = sqlDB.Ping()
 	if err != nil {
 		logger.Info.Fatal(err.Error())
 		return nil, err
