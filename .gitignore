@@ -13,5 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+
+# Compiled binary file
 main
+
+# Enviroment variables file
 .env
