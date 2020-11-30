@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/middlewares"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 	"github.com/yohanalexander/desafio-banking-go/pkg/middleware"
 )
@@ -17,7 +18,7 @@ func handlerHello(app *app.App) http.HandlerFunc {
 // HandlerHello um handler de hello world
 func HandlerHello(app *app.App) http.HandlerFunc {
 	mdw := []middleware.Middleware{
-		middleware.LogRequest,
+		middlewares.LogRequest,
 	}
 	return middleware.Chain(handlerHello(app), mdw...)
 }
