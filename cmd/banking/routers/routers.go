@@ -11,7 +11,7 @@ import (
 // GetRouter retorna o roteador mux da API
 func GetRouter(app *app.App) *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/", hello.HandlerHello).Methods("GET")
+	router.HandleFunc("/", hello.HandlerHello(app)).Methods("GET")
 	http.Handle("/", router)
 	return router
 }
