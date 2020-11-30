@@ -5,11 +5,11 @@ endif
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o banking cmd/banking/main.go
+	go build -o main cmd/banking/main.go
 
 .PHONY: run
 run:
-	@docker-compose up -d --build
+	@docker-compose up -d
 
 .PHONY: stop
 stop:
