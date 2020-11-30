@@ -19,7 +19,7 @@ func GetRouter(app *app.App) *mux.Router {
 
 	// rota de home
 	homeRoutes := mux.NewRouter()
-	router.PathPrefix("/home").Handler(common.With(
+	router.Path("/home").Handler(common.With(
 		negroni.Wrap(homeRoutes),
 	))
 	home := homeRoutes.Path("/home").Subrouter()
@@ -27,7 +27,7 @@ func GetRouter(app *app.App) *mux.Router {
 
 	// rota de login
 	loginRoutes := mux.NewRouter()
-	router.PathPrefix("/login").Handler(common.With(
+	router.Path("/login").Handler(common.With(
 		negroni.Wrap(loginRoutes),
 	))
 	login := loginRoutes.Path("/login").Subrouter()
@@ -35,18 +35,27 @@ func GetRouter(app *app.App) *mux.Router {
 
 	// rota de accounts
 	accountsRoutes := mux.NewRouter()
-	router.PathPrefix("/accounts").Handler(common.With(
+	router.Path("/accounts").Handler(common.With(
 		negroni.Wrap(accountsRoutes),
 	))
 	accounts := accountsRoutes.Path("/accounts").Subrouter()
 	accounts.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	accounts.Methods("POST").HandlerFunc(hello.HandlerHello(app))
+
+	// rota de balance
+	balanceRoutes := mux.NewRouter()
+	router.Path("/accounts/{id}/balance").Handler(common.With(
+		negroni.Wrap(balanceRoutes),
+	))
+	balance := balanceRoutes.Path("/accounts/{id}/balance").Subrouter()
+	balance.Methods("GET").HandlerFunc(hello.HandlerHello(app))
 
 	// rota de transfers
 	transfersRoutes := mux.NewRouter()
-	router.PathPrefix("/transfers").Handler(common.With(
+	router.Path("/transfers").Handler(common.With(
 		negroni.Wrap(transfersRoutes),
 	))
-	transfers := accountsRoutes.Path("/transfers").Subrouter()
+	transfers := transfersRoutes.Path("/transfers").Subrouter()
 	transfers.Methods("GET").HandlerFunc(hello.HandlerHello(app))
 
 	return router
