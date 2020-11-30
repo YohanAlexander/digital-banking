@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,7 +14,6 @@ type DB struct {
 func GetDB(connStr string) (*DB, error) {
 	db, err := getDB(connStr)
 	if err != nil {
-		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 
@@ -28,7 +26,6 @@ func GetDB(connStr string) (*DB, error) {
 func (db *DB) CloseDB() error {
 	sqlDB, err := db.Client.DB()
 	if err != nil {
-		logger.Info.Fatal(err.Error())
 		return err
 	}
 	return sqlDB.Close()
@@ -39,17 +36,14 @@ func getDB(connStr string) (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
-		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 	err = sqlDB.Ping()
 	if err != nil {
-		logger.Info.Fatal(err.Error())
 		return nil, err
 	}
 

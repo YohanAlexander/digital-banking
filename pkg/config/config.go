@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
 )
 
 // Config armazena as variáveis de ambiente
@@ -31,9 +31,9 @@ func GetConfig() *Config {
 	conf.apiPort = viper.GetString(`SERVER_ADDRESS`)
 
 	if conf.debug == "true" {
-		logger.Info.Println("Banking service is Running in Debug Mode")
+		logrus.Warn("Banking service is Running in Debug Mode")
 	} else {
-		logger.Info.Println("Banking service is Running in Production Mode")
+		logrus.Warn("Banking service is Running in Production Mode")
 	}
 	return conf
 }

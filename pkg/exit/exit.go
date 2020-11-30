@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yohanalexander/desafio-banking-go/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 // Init callback function invocada para lidar com signals de exit na API
@@ -16,7 +16,7 @@ func Init(cb func()) {
 
 	go func() {
 		sig := <-sigs
-		logger.Error.Fatal("Exit reason: ", sig)
+		logrus.Error("Exit reason: ", sig)
 		close(terminate)
 	}()
 

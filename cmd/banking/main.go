@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/accounts"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/transfers"
@@ -11,44 +12,50 @@ import (
 	"github.com/yohanalexander/desafio-banking-go/pkg/server"
 )
 
+var api *app.App
+
 func init() {
+
 	viper.SetConfigFile(".env")
 	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Info.Fatal(err.Error())
+		logrus.Warn("Falha ao carregar .env")
+	} else {
+		logrus.Info("Usando arquivo config:", viper.ConfigFileUsed())
+		api, err = app.GetApp()
+		if err != nil {
+			logrus.Fatal(err.Error())
+		} else {
+			// migrando os schemas do DB
+			err := api.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
+			if err != nil {
+				logrus.Fatal(err.Error())
+			}
+		}
 	}
-	logger.Info.Println("Using Config file: ", viper.ConfigFileUsed())
 }
 
 func main() {
-	app, err := app.GetApp()
-	if err != nil {
-		logger.Info.Fatal(err.Error())
-	}
-
-	// migrando os schemas do DB
-	app.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
-
 	srv := server.
 		GetServer().
-		WithAddr(app.Cfg.GetAPIPort()).
-		WithRouter(routers.GetRouter(app)).
+		WithAddr(api.Cfg.GetAPIPort()).
+		WithRouter(routers.GetRouter(api)).
 		WithLogger(logger.Error)
 
 	go func() {
-		logger.Info.Println("Starting server at ", app.Cfg.GetAPIPort())
+		api.Log.Info("Iniciando servidor na porta", api.Cfg.GetAPIPort())
 		if err := srv.StartServer(); err != nil {
-			logger.Error.Fatal(err.Error())
+			api.Log.Fatal(err.Error())
 		}
 	}()
 
 	exit.Init(func() {
 		if err := srv.CloseServer(); err != nil {
-			logger.Error.Println(err.Error())
+			api.Log.Error(err.Error())
 		}
 
-		if err := app.DB.CloseDB(); err != nil {
-			logger.Error.Println(err.Error())
+		if err := api.DB.CloseDB(); err != nil {
+			api.Log.Error(err.Error())
 		}
 	})
 }
