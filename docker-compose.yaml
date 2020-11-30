@@ -1,0 +1,39 @@
+version: "3.8"
+
+volumes:
+  banking-volume:
+    name: banking-volume
+
+networks:
+  banking-network:
+    name: banking-network
+
+services:
+  db:
+    image: postgres:12.0
+    restart: on-failure
+    container_name: banking_db
+    env_file:
+      - .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - banking-volume:/var/lib/postgresql/data
+    networks:
+      - banking-network
+
+  web:
+    build:
+      context: .
+      target: ${BUILD_TARGET}
+    container_name: banking_api
+    env_file:
+      - .env
+    ports:
+      - ${SERVER_ADDRESS}:${SERVER_ADDRESS}
+    depends_on:
+      - db
+    volumes:
+      - ./:/app
+    networks:
+      - banking-network
