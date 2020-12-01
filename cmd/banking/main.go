@@ -3,8 +3,7 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/accounts"
-	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models/transfers"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/models"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/routers"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 	"github.com/yohanalexander/desafio-banking-go/pkg/exit"
@@ -37,7 +36,7 @@ func initapp() error {
 
 func initdb() error {
 	// migrando os schemas do DB
-	err := api.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
+	err := api.DB.Client.AutoMigrate(&models.Account{}, &models.Transfer{})
 	if err != nil {
 		logrus.Fatal(err.Error())
 	}
