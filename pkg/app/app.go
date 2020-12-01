@@ -20,7 +20,7 @@ func GetApp() (*App, error) {
 	log := logrus.New()
 	vld := validator.New()
 	cfg := config.GetConfig()
-	db, err := db.GetDB(cfg.GetDBConnStr())
+	db, err := db.GetDB(cfg.GetDBConnStr(), cfg.GetDebugMode())
 	if err != nil {
 		return nil, err
 	}

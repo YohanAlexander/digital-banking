@@ -14,28 +14,54 @@ import (
 
 var api *app.App
 
-func init() {
-
+func initenv() error {
+	// capturando variáveis de ambiente
 	viper.SetConfigFile(".env")
 	err := viper.ReadInConfig()
 	if err != nil {
-		logrus.Warn("Falha ao carregar .env")
-	} else {
-		logrus.Info("Usando arquivo config:", viper.ConfigFileUsed())
-		api, err = app.GetApp()
-		if err != nil {
-			logrus.Fatal(err.Error())
-		} else {
-			// migrando os schemas do DB
-			err := api.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
-			if err != nil {
-				logrus.Fatal(err.Error())
+		logrus.Fatal("Falha ao carregar: ", viper.ConfigFileUsed())
+	}
+	return err
+}
+
+func initapp() error {
+	logrus.Info("Usando arquivo config: ", viper.ConfigFileUsed())
+	// armazenando configurações em um struct app
+	var err error
+	api, err = app.GetApp()
+	if err != nil {
+		logrus.Fatal(err.Error())
+	}
+	return err
+}
+
+func initdb() error {
+	// migrando os schemas do DB
+	err := api.DB.Client.AutoMigrate(&accounts.Account{}, &transfers.Transfer{})
+	if err != nil {
+		logrus.Fatal(err.Error())
+	}
+	return err
+}
+
+func init() {
+	if initenv() == nil {
+		if initapp() == nil {
+			if initdb() == nil {
+				if api.Cfg.GetDebugMode() == "true" {
+					logrus.Warn("Banking rodando em modo Debug")
+				} else {
+					logrus.Warn("Banking rodando em modo Silent")
+				}
 			}
 		}
 	}
 }
 
 func main() {
+
+	defer api.DB.CloseDB()
+
 	srv := server.
 		GetServer().
 		WithAddr(api.Cfg.GetAPIPort()).
@@ -43,7 +69,7 @@ func main() {
 		WithLogger(logger.Error)
 
 	go func() {
-		api.Log.Info("Iniciando servidor na porta", api.Cfg.GetAPIPort())
+		api.Log.Info("Iniciando servidor na porta ", api.Cfg.GetAPIPort())
 		if err := srv.StartServer(); err != nil {
 			api.Log.Fatal(err.Error())
 		}

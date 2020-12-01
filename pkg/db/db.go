@@ -3,6 +3,7 @@ package db
 import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // DB armazena a conexão com o banco de dados
@@ -11,8 +12,8 @@ type DB struct {
 }
 
 // GetDB retorna a conexão com o banco de dados
-func GetDB(connStr string) (*DB, error) {
-	db, err := getDB(connStr)
+func GetDB(connStr, debugMode string) (*DB, error) {
+	db, err := getDB(connStr, debugMode)
 	if err != nil {
 		return nil, err
 	}
@@ -32,18 +33,31 @@ func (db *DB) CloseDB() error {
 }
 
 // getDB estabelece a conexão com o banco de dados
-func getDB(connStr string) (*gorm.DB, error) {
+func getDB(connStr, debugMode string) (*gorm.DB, error) {
 
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
-	if err != nil {
-		return nil, err
+	var (
+		db  *gorm.DB
+		err error
+	)
+
+	if debugMode == "true" {
+		if db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		}); err != nil {
+			return nil, err
+		}
+
+	} else {
+		if db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{}); err != nil {
+			return nil, err
+		}
 	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-	err = sqlDB.Ping()
-	if err != nil {
+
+	if sqlDB, err := db.DB(); err == nil {
+		if err := sqlDB.Ping(); err != nil {
+			return nil, err
+		}
+	} else {
 		return nil, err
 	}
 
