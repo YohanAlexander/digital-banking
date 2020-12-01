@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// BeforeCreate hook do gorm para gerar uuid no automigrate do DB
+// BeforeCreate hook do gorm para gerar uuid no create
 func (t *Transfer) BeforeCreate(tx *gorm.DB) (err error) {
 	t.ID = uuid.New()
 	return

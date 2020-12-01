@@ -16,6 +16,7 @@ func ListAccounts(app *app.App) http.HandlerFunc {
 		// capturando accounts no DB
 		var accounts []accounts.Account
 		result := app.DB.Client.Find(&accounts)
+		// caso tenha erro ao procurar no banco retorna 500
 		if result.Error != nil {
 			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 			return
@@ -33,25 +34,28 @@ func PostAccount(app *app.App) http.HandlerFunc {
 		// capturando account no request
 		a := &accounts.Account{}
 		err := json.NewDecoder(r.Body).Decode(&a)
+		// caso tenha erro no decode do request retorna 400
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		// validando struct account
+		// validando json do struct account
 		invalid := app.Vld.Struct(a)
+		// caso o corpo do request seja inválido retorna 400
 		if invalid != nil {
 			http.Error(w, invalid.Error(), http.StatusBadRequest)
 			return
 		}
-		// armazenando account no DB
+		// armazenando struct account no DB
 		result := a.Create(app)
+		// caso tenha erro ao armazenar no banco retorna 500
 		if result.Error != nil {
-			http.Error(w, result.Error.Error(), http.StatusBadRequest)
+			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(&a)
+		json.NewEncoder(w).Encode(map[string]string{"Resposta": "Conta criada"})
 	}
 }
 
@@ -64,12 +68,13 @@ func BalanceAccount(app *app.App) http.HandlerFunc {
 		// capturando account no DB
 		a := &accounts.Account{}
 		result := app.DB.Client.First(&a, &id)
+		// caso tenha erro ao procurar no banco retorna 404
 		if result.Error != nil {
 			http.Error(w, result.Error.Error(), http.StatusNotFound)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&a.Balance)
+		json.NewEncoder(w).Encode(map[string]float64{"balance": a.Balance})
 	}
 }
