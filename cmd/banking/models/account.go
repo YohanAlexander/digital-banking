@@ -28,7 +28,7 @@ type Account struct {
 	Secret     string     `json:"secret" validate:"required"`
 	Balance    float64    `json:"balance" validate:"required"`
 	CreatedAt  time.Time  `json:"created_at"`
-	Transfers  []Transfer `json:"-" gorm:"foreignKey:ID"`
+	Transfers  []Transfer `json:"-" gorm:"foreignKey:AccountOriginID"`
 }
 
 // CreateAccount cria uma conta de usuário

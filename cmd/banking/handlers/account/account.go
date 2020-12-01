@@ -44,9 +44,9 @@ func PostAccount(app *app.App) http.HandlerFunc {
 			return
 		}
 		// armazenando struct account no DB
-		if result := a.CreateAccount(app); result != nil {
+		if err := a.CreateAccount(app); err != nil {
 			// caso tenha erro ao armazenar no banco retorna 500
-			http.Error(w, result.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -63,9 +63,9 @@ func BalanceAccount(app *app.App) http.HandlerFunc {
 		id := mux.Vars(r)["id"]
 		// capturando account no DB
 		a := &models.Account{}
-		if result := app.DB.Client.First(&a, &id); result.Error != nil {
+		if err := app.DB.Client.First(&a, &id); err.Error != nil {
 			// caso tenha erro ao procurar no banco retorna 404
-			http.Error(w, result.Error.Error(), http.StatusNotFound)
+			http.Error(w, err.Error.Error(), http.StatusNotFound)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")

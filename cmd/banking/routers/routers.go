@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/negroni"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/account"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/hello"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/transfer"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 )
 
@@ -57,7 +58,8 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.Wrap(transfersRoutes),
 	))
 	transfers := transfersRoutes.Path("/transfers").Subrouter()
-	transfers.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	transfers.Methods("GET").HandlerFunc(transfer.ListTransfers(app))
+	transfers.Methods("POST").HandlerFunc(transfer.PostTransfer(app))
 
 	return router
 }

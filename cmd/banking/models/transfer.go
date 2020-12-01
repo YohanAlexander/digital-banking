@@ -25,21 +25,21 @@ type Transfer struct {
 	CreatedAt            time.Time `json:"created_at"`
 }
 
-// Create realiza uma transferência entre contas
-func (t *Transfer) Create(app *app.App) error {
+// CreateTransfer realiza uma transferência entre contas
+func (t *Transfer) CreateTransfer(app *app.App) error {
 
 	// inicia o modo de transaction
 	tx := app.DB.Client.Begin()
 
 	// verifica se a conta de destino existe
-	if err := t.CheckDestinationAccount(app); err != nil {
+	if err := t.checkDestinationAccount(app); err != nil {
 		// caso não encontre faz rollback
 		tx.Rollback()
 		return err
 	}
 
 	// verifica se a conta de origem tem saldo suficiente
-	if err := t.CheckOriginBalance(app); err != nil {
+	if err := t.checkOriginBalance(app); err != nil {
 		// caso não tenha saldo faz rollback
 		tx.Rollback()
 		return err
@@ -58,8 +58,15 @@ func (t *Transfer) Create(app *app.App) error {
 		return err.Error
 	}
 
-	// atualiza os saldos da conta de origem e destino
-	if err := t.BalanceAccounts(app); err != nil {
+	// atualiza o saldo da conta de origem
+	if err := t.balanceOriginAccount(app); err != nil {
+		// caso ocorra erro faz rollback
+		tx.Rollback()
+		return err
+	}
+
+	// atualiza o saldo da conta de destino
+	if err := t.balanceDestinationAccount(app); err != nil {
 		// caso ocorra erro faz rollback
 		tx.Rollback()
 		return err
@@ -73,8 +80,12 @@ func (t *Transfer) Create(app *app.App) error {
 
 }
 
-// CheckDestinationAccount verifica se a conta de destino existe
-func (t *Transfer) CheckDestinationAccount(app *app.App) error {
+// checkDestinationAccount verifica se a conta de destino existe
+func (t *Transfer) checkDestinationAccount(app *app.App) error {
+
+	if t.AccountDestinationID == t.AccountOriginID {
+		return errors.New("Contas de transferência devem ser diferentes")
+	}
 
 	// captura a conta de destino no banco
 	a := &Account{}
@@ -83,8 +94,8 @@ func (t *Transfer) CheckDestinationAccount(app *app.App) error {
 
 }
 
-// CheckOriginBalance verifica se a conta de origem tem saldo suficiente
-func (t *Transfer) CheckOriginBalance(app *app.App) error {
+// checkOriginBalance verifica se a conta de origem tem saldo suficiente
+func (t *Transfer) checkOriginBalance(app *app.App) error {
 
 	// captura a conta de origem no banco
 	a := &Account{}
@@ -94,7 +105,7 @@ func (t *Transfer) CheckOriginBalance(app *app.App) error {
 	}
 
 	// caso não tenha saldo suficiente retorna erro adequado
-	if (t.Amount - a.Balance) < 0 {
+	if (a.Balance - t.Amount) < 0 {
 		return errors.New("Saldo da conta insuficiente")
 	}
 
@@ -103,42 +114,40 @@ func (t *Transfer) CheckOriginBalance(app *app.App) error {
 
 }
 
-// BalanceAccounts atualiza os saldos da conta de origem e destino
-func (t *Transfer) BalanceAccounts(app *app.App) error {
-
-	// inicia o modo de transaction
-	tx := app.DB.Client.Begin()
+// balanceOriginAccount atualiza o saldo da conta de origem
+func (t *Transfer) balanceOriginAccount(app *app.App) error {
 
 	// captura a conta de origem no DB
 	origem := &Account{}
 	if err := app.DB.Client.First(&origem, &t.AccountOriginID); err.Error != nil {
-		tx.Rollback()
-		return err.Error
-	}
-
-	// captura a conta de destino no DB
-	destino := &Account{}
-	if err := app.DB.Client.First(&destino, &t.AccountDestinationID); err.Error != nil {
-		tx.Rollback()
 		return err.Error
 	}
 
 	// atualiza o saldo da conta de origem
 	origem.Balance = origem.Balance - t.Amount
-	if err := tx.Save(&origem); err != nil {
-		tx.Rollback()
+	if err := app.DB.Client.Save(&origem); err != nil {
+		return err.Error
+	}
+
+	// retorna erro nulo
+	return nil
+
+}
+
+// balanceDestinationAccount atualiza o saldo da conta de destino
+func (t *Transfer) balanceDestinationAccount(app *app.App) error {
+
+	// captura a conta de destino no DB
+	destino := &Account{}
+	if err := app.DB.Client.First(&destino, &t.AccountDestinationID); err.Error != nil {
 		return err.Error
 	}
 
 	// atualiza o saldo da conta de destino
 	destino.Balance = destino.Balance + t.Amount
-	if err := tx.Save(&destino); err != nil {
-		tx.Rollback()
+	if err := app.DB.Client.Save(&destino); err != nil {
 		return err.Error
 	}
-
-	// balanceamento sem erros é comitado
-	tx.Commit()
 
 	// retorna erro nulo
 	return nil
