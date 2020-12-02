@@ -8,9 +8,11 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/google/uuid v1.1.2
+	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
+	github.com/smartystreets/assertions v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/urfave/negroni v1.0.0

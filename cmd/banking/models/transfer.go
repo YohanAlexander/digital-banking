@@ -120,17 +120,25 @@ func (t *Transfer) checkOriginBalance(app *app.App) error {
 // balanceOriginAccount atualiza o saldo da conta de origem
 func (t *Transfer) balanceOriginAccount(app *app.App) error {
 
+	// inicia o modo de transaction
+	tx := app.DB.Client.Begin()
+
 	// captura a conta de origem no DB
 	origem := &Account{}
-	if err := app.DB.Client.First(&origem, &t.AccountOriginID); err.Error != nil {
+	if result := tx.First(&origem, &t.AccountOriginID); result.Error != nil {
+		tx.Rollback()
 		return errors.New("Conta de origem não encontrada")
 	}
 
 	// atualiza o saldo da conta de origem
 	origem.Balance = origem.Balance - t.Amount
-	if err := app.DB.Client.Save(&origem); err != nil {
+	if result := tx.Save(&origem); result.Error != nil {
+		tx.Rollback()
 		return errors.New("Erro ao atualizar saldo da conta de origem")
 	}
+
+	// atualização sem erros é comitada
+	tx.Commit()
 
 	// caso sucesso retorna erro nulo
 	return nil
@@ -140,17 +148,25 @@ func (t *Transfer) balanceOriginAccount(app *app.App) error {
 // balanceDestinationAccount atualiza o saldo da conta de destino
 func (t *Transfer) balanceDestinationAccount(app *app.App) error {
 
+	// inicia o modo de transaction
+	tx := app.DB.Client.Begin()
+
 	// captura a conta de destino no DB
 	destino := &Account{}
-	if err := app.DB.Client.First(&destino, &t.AccountDestinationID); err.Error != nil {
+	if result := tx.First(&destino, &t.AccountDestinationID); result.Error != nil {
+		tx.Rollback()
 		return errors.New("Conta de destino não encontrada")
 	}
 
 	// atualiza o saldo da conta de destino
 	destino.Balance = destino.Balance + t.Amount
-	if err := app.DB.Client.Save(&destino); err != nil {
+	if result := tx.Save(&destino); result.Error != nil {
+		tx.Rollback()
 		return errors.New("Erro ao atualizar saldo da conta de destino")
 	}
+
+	// atualização sem erros é comitada
+	tx.Commit()
 
 	// caso sucesso retorna erro nulo
 	return nil

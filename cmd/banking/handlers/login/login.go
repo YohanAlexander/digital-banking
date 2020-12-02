@@ -53,8 +53,8 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 			return
 		}
 
-		// definindo o tempo de validade do token para 5 min
-		expirationTime := time.Now().Add(5 * time.Minute)
+		// definindo o tempo de validade do token para 6 horas
+		expirationTime := time.Now().Add(6 * time.Hour)
 		// criando o JWT claims que contém o CPF e tempo de validade
 		claims := &models.Claims{
 			CPF: creds.CPF,
@@ -73,13 +73,6 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 			http.Error(w, "Erro de autenticação", http.StatusInternalServerError)
 			return
 		}
-
-		// adiciona cookie com o token JWT gerado
-		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   tokenString,
-			Expires: expirationTime,
-		})
 
 		// retorna o token em formato JSON
 		w.Header().Set("Content-Type", "application/json")

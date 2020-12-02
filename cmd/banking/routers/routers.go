@@ -18,6 +18,7 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.NewLogger(),
 	)
 
+	// criando roteador base
 	router := mux.NewRouter()
 
 	// rota de home
