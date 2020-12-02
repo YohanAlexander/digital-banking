@@ -2,7 +2,7 @@ package login
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -24,13 +24,17 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 		creds := &models.Credentials{}
 		if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
 			// caso tenha erro no decode do request retorna 400
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "Formato JSON inválido", http.StatusBadRequest)
 			return
 		}
+
 		// validando json das credenciais
 		if err := app.Vld.Struct(creds); err != nil {
+			// traduzindo os erros do JSON inválido
+			errs := app.TranslateErrors(err)
 			// caso o corpo do request seja inválido retorna 400
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, errs)
 			return
 		}
 
@@ -38,14 +42,14 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 		a := &models.Account{}
 		if err := app.DB.Client.First(&a, "cpf = ?", creds.CPF); err.Error != nil {
 			// caso tenha erro ao procurar no banco retorna 401
-			http.Error(w, err.Error.Error(), http.StatusUnauthorized)
+			http.Error(w, "Conta não encontrada", http.StatusUnauthorized)
 			return
 		}
 
 		// se a senha está incorreta
 		if !secret.CheckPasswordHash(creds.Secret, a.Secret) {
 			// caso tenha erro ao verificar o hash retorna 401
-			http.Error(w, errors.New("Senha incorreta").Error(), http.StatusUnauthorized)
+			http.Error(w, "Senha incorreta", http.StatusUnauthorized)
 			return
 		}
 
@@ -66,7 +70,7 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 		tokenString, err := token.SignedString(jwtKey)
 		if err != nil {
 			// caso tenha erro ao criar o JWT retorna 500
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Erro de autenticação", http.StatusInternalServerError)
 			return
 		}
 
@@ -81,5 +85,6 @@ func HandlerLogin(app *app.App) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+
 	}
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ func (a *Account) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.New()
 	a.Secret, err = secret.HashPassword(a.Secret)
 	if err != nil {
-		return err
+		return errors.New("Erro ao criptografar senha")
 	}
 	return
 }
@@ -44,6 +45,10 @@ func (a *Account) CreateAccount(app *app.App) error {
 		Transfers: a.Transfers,
 	})
 
-	return result.Error
+	if result.Error != nil {
+		return errors.New("Erro na criação da conta")
+	}
+
+	return nil
 
 }

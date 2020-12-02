@@ -38,7 +38,7 @@ func initdb() error {
 	// migrando os schemas do DB
 	err := api.DB.Client.AutoMigrate(&models.Account{}, &models.Transfer{})
 	if err != nil {
-		logrus.Fatal(err.Error())
+		logrus.Fatal("Erro na migração dos dados")
 	}
 	return err
 }

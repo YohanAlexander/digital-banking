@@ -2,6 +2,7 @@ package account
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -13,16 +14,19 @@ import (
 func ListAccounts(app *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
 		// capturando accounts no DB
 		var a []models.Account
 		if err := app.DB.Client.Find(&a); err.Error != nil {
 			// caso tenha erro ao procurar no banco retorna 500
-			http.Error(w, err.Error.Error(), http.StatusInternalServerError)
+			http.Error(w, "Erro na listagem das contas", http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&a)
+		json.NewEncoder(w).Encode(a)
+
 	}
 }
 
@@ -30,28 +34,36 @@ func ListAccounts(app *app.App) http.HandlerFunc {
 func PostAccount(app *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
 		// capturando account no request
 		a := &models.Account{}
 		if err := json.NewDecoder(r.Body).Decode(&a); err != nil {
 			// caso tenha erro no decode do request retorna 400
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "Formato JSON inválido", http.StatusBadRequest)
 			return
 		}
+
 		// validando json do struct account
 		if err := app.Vld.Struct(a); err != nil {
+			// traduzindo os erros do JSON inválido
+			errs := app.TranslateErrors(err)
 			// caso o corpo do request seja inválido retorna 400
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, errs)
 			return
 		}
+
 		// armazenando struct account no DB
 		if err := a.CreateAccount(app); err != nil {
 			// caso tenha erro ao armazenar no banco retorna 500
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"Resposta": "Conta criada"})
+		json.NewEncoder(w).Encode("Conta criada com sucesso")
+
 	}
 }
 
@@ -59,17 +71,21 @@ func PostAccount(app *app.App) http.HandlerFunc {
 func BalanceAccount(app *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
 		// capturando id na url
 		id := mux.Vars(r)["id"]
+
 		// capturando account no DB
 		a := &models.Account{}
 		if err := app.DB.Client.First(&a, &id); err.Error != nil {
 			// caso tenha erro ao procurar no banco retorna 404
-			http.Error(w, err.Error.Error(), http.StatusNotFound)
+			http.Error(w, "Conta não encontrada", http.StatusNotFound)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]float64{"balance": a.Balance})
+
 	}
 }

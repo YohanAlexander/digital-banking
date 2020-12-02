@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -27,7 +29,7 @@ func GetDB(connStr, debugMode string) (*DB, error) {
 func (db *DB) CloseDB() error {
 	sqlDB, err := db.Client.DB()
 	if err != nil {
-		return err
+		return errors.New("Erro ao fechar conexão com o banco")
 	}
 	return sqlDB.Close()
 }
@@ -44,21 +46,21 @@ func getDB(connStr, debugMode string) (*gorm.DB, error) {
 		if db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
 		}); err != nil {
-			return nil, err
+			return nil, errors.New("Erro ao abrir conexão com o banco")
 		}
 
 	} else {
 		if db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{}); err != nil {
-			return nil, err
+			return nil, errors.New("Erro ao abrir conexão com o banco")
 		}
 	}
 
 	if sqlDB, err := db.DB(); err == nil {
 		if err := sqlDB.Ping(); err != nil {
-			return nil, err
+			return nil, errors.New("Erro ao abrir conexão com o banco")
 		}
 	} else {
-		return nil, err
+		return nil, errors.New("Erro ao abrir conexão com o banco")
 	}
 
 	return db, nil
