@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/account"
-	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/hello"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/login"
 	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/transfer"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
@@ -20,14 +19,6 @@ func GetRouter(app *app.App) *mux.Router {
 
 	// criando roteador base
 	router := mux.NewRouter()
-
-	// rota de home
-	homeRoutes := mux.NewRouter()
-	router.Path("/home").Handler(common.With(
-		negroni.Wrap(homeRoutes),
-	))
-	home := homeRoutes.Path("/home").Subrouter()
-	home.Methods("GET").HandlerFunc(hello.HandlerHello(app))
 
 	// rota de login
 	loginRoutes := mux.NewRouter()
