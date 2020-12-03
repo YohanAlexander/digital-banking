@@ -3,19 +3,19 @@ package config
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // Config armazena as variáveis de ambiente
 type Config struct {
-	apiPort string
-	dbUser  string
-	dbPass  string
-	dbHost  string
-	dbPort  string
-	dbName  string
-	debug   string
+	tokenKey string
+	apiPort  string
+	dbUser   string
+	dbPass   string
+	dbHost   string
+	dbPort   string
+	dbName   string
+	debug    string
 }
 
 // GetConfig captura os valores das variáveis de ambiente
@@ -29,12 +29,8 @@ func GetConfig() *Config {
 	conf.dbPass = viper.GetString(`POSTGRES_PASSWORD`)
 	conf.dbName = viper.GetString(`POSTGRES_DB`)
 	conf.apiPort = viper.GetString(`SERVER_ADDRESS`)
+	conf.tokenKey = viper.GetString(`TOKEN_KEY`)
 
-	if conf.debug == "true" {
-		logrus.Warn("Banking service is Running in Debug Mode")
-	} else {
-		logrus.Warn("Banking service is Running in Production Mode")
-	}
 	return conf
 }
 
@@ -58,4 +54,14 @@ func (c *Config) getDBConnStr(dbhost, dbname string) string {
 // GetAPIPort retorna a porta do servidor da API
 func (c *Config) GetAPIPort() string {
 	return ":" + c.apiPort
+}
+
+// GetDebugMode retorna o valor do modo de debug
+func (c *Config) GetDebugMode() string {
+	return c.debug
+}
+
+// GetTokenKey retorna o valor da chave para gerar o token JWT
+func (c *Config) GetTokenKey() string {
+	return c.tokenKey
 }

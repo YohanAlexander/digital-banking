@@ -3,7 +3,9 @@ package routers
 import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
-	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/hello"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/account"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/login"
+	"github.com/yohanalexander/desafio-banking-go/cmd/banking/handlers/transfer"
 	"github.com/yohanalexander/desafio-banking-go/pkg/app"
 )
 
@@ -15,23 +17,16 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.NewLogger(),
 	)
 
+	// criando roteador base
 	router := mux.NewRouter()
-
-	// rota de home
-	homeRoutes := mux.NewRouter()
-	router.Path("/home").Handler(common.With(
-		negroni.Wrap(homeRoutes),
-	))
-	home := homeRoutes.Path("/home").Subrouter()
-	home.Methods("GET").HandlerFunc(hello.HandlerHello(app))
 
 	// rota de login
 	loginRoutes := mux.NewRouter()
 	router.Path("/login").Handler(common.With(
 		negroni.Wrap(loginRoutes),
 	))
-	login := loginRoutes.Path("/login").Subrouter()
-	login.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	logins := loginRoutes.Path("/login").Subrouter()
+	logins.Methods("POST").HandlerFunc(login.HandlerLogin(app))
 
 	// rota de accounts
 	accountsRoutes := mux.NewRouter()
@@ -39,16 +34,16 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.Wrap(accountsRoutes),
 	))
 	accounts := accountsRoutes.Path("/accounts").Subrouter()
-	accounts.Methods("GET").HandlerFunc(hello.HandlerHello(app))
-	accounts.Methods("POST").HandlerFunc(hello.HandlerHello(app))
+	accounts.Methods("GET").HandlerFunc(account.ListAccounts(app))
+	accounts.Methods("POST").HandlerFunc(account.PostAccount(app))
 
 	// rota de balance
 	balanceRoutes := mux.NewRouter()
 	router.Path("/accounts/{id}/balance").Handler(common.With(
 		negroni.Wrap(balanceRoutes),
 	))
-	balance := balanceRoutes.Path("/accounts/{id}/balance").Subrouter()
-	balance.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	balances := balanceRoutes.Path("/accounts/{id}/balance").Subrouter()
+	balances.Methods("GET").HandlerFunc(account.BalanceAccount(app))
 
 	// rota de transfers
 	transfersRoutes := mux.NewRouter()
@@ -56,7 +51,8 @@ func GetRouter(app *app.App) *mux.Router {
 		negroni.Wrap(transfersRoutes),
 	))
 	transfers := transfersRoutes.Path("/transfers").Subrouter()
-	transfers.Methods("GET").HandlerFunc(hello.HandlerHello(app))
+	transfers.Methods("GET").HandlerFunc(transfer.ListTransfers(app))
+	transfers.Methods("POST").HandlerFunc(transfer.PostTransfer(app))
 
 	return router
 }
