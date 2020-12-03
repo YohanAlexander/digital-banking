@@ -2,7 +2,7 @@
 
 ## Sobre o projeto
 
-O projeto consiste em uma API de transferencia entre contas internas de um banco digital que usa o formato JSON para leitura e escrita.
+O projeto consiste em uma API de transferência entre contas internas de um banco digital que usa o formato JSON para leitura e escrita.
 
 ## Entidades da API
 
@@ -28,17 +28,21 @@ O projeto consiste em uma API de transferencia entre contas internas de um banco
 * `amount`
 * `created_at`
 
-
 ## Rotas da API
 
-| Metódo | URL                            | Descrição                                  | Autenticação |
-|--------|--------------------------------|--------------------------------------------|--------------|
-| GET    | /accounts                      | obtém a lista de contas                    | Não          |
-| GET    | /accounts/{account_id}/balance | obtém o saldo da conta                     | Não          |
-| POST   | /accounts                      | cria uma Account                           | Não          |
-| POST   | /login                         | autentica a Account e retorna o token JWT  | Não          |
-| GET    | /transfers                     | obtém a lista de transferências da Account | Sim          |
-| POST   | /transfers                     | transfere de uma Account para outra        | Sim          |
+| Metódo | URL                            | Descrição                                        | Autenticação |
+|--------|--------------------------------|--------------------------------------------------|--------------|
+| GET    | /accounts                      | retorna a lista de contas no banco               | Não          |
+| GET    | /accounts/{account_id}/balance | retorna o saldo da conta no banco                | Não          |
+| POST   | /accounts                      | cria uma conta no banco                          | Não          |
+| POST   | /login                         | autentica a conta no banco e retorna o token JWT | Não          |
+| GET    | /transfers                     | retorna as transferências da conta no banco      | Sim          |
+| POST   | /transfers                     | transfere de uma conta para outra no banco       | Sim          |
+
+
+## Documentação
+
+Uma documentação online completa das rotas da API e dos corpos de requisição e resposta pode ser vista em [Postman](https://documenter.getpostman.com/view/12847022/TVmMgxjU).
 
 ## Dependências
 
@@ -103,3 +107,7 @@ Para desligar a API use o comando:
 ``` sh
 make stop
 ```
+
+## Testando a API
+
+Para fazer requisições e testar a API use alguma ferramenta como o [HTTPie](https://httpie.io/) ou [Postman](https://www.postman.com/). A documentação já conta com as [collections](https://documenter.getpostman.com/view/12847022/TVmMgxjU) para os testes.
