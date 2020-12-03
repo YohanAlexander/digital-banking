@@ -26,7 +26,7 @@ type Transfer struct {
 }
 
 // CreateTransfer realiza uma transferência entre contas
-func (t *Transfer) CreateTransfer(app *app.App) error {
+func (t *Transfer) CreateTransfer(app *app.App) (*Transfer, error) {
 
 	// inicia o modo de transaction
 	tx := app.DB.Client.Begin()
@@ -35,48 +35,49 @@ func (t *Transfer) CreateTransfer(app *app.App) error {
 	if err := t.checkDestinationAccount(app); err != nil {
 		// caso não encontre faz rollback
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	// verifica se a conta de origem tem saldo suficiente
 	if err := t.checkOriginBalance(app); err != nil {
 		// caso não tenha saldo faz rollback
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	// cria o struct transfer no DB
-	if err := tx.Create(&Transfer{
+	transfer := &Transfer{
 		ID:                   t.ID,
 		AccountOriginID:      t.AccountOriginID,
 		AccountDestinationID: t.AccountDestinationID,
 		Amount:               t.Amount,
 		CreatedAt:            t.CreatedAt,
-	}); err.Error != nil {
+	}
+	if err := tx.Create(&transfer); err.Error != nil {
 		// caso ocorra erro faz rollback
 		tx.Rollback()
-		return errors.New("Erro na criação da transferência")
+		return nil, errors.New("Erro na criação da transferência")
 	}
 
 	// atualiza o saldo da conta de origem
 	if err := t.balanceOriginAccount(app); err != nil {
 		// caso ocorra erro faz rollback
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	// atualiza o saldo da conta de destino
 	if err := t.balanceDestinationAccount(app); err != nil {
 		// caso ocorra erro faz rollback
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	// transferência sem erros é comitada
 	tx.Commit()
 
 	// caso sucesso retorna erro nulo
-	return nil
+	return transfer, nil
 
 }
 

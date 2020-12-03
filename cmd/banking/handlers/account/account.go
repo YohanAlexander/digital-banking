@@ -54,7 +54,8 @@ func PostAccount(app *app.App) http.HandlerFunc {
 		}
 
 		// armazenando struct account no DB
-		if err := a.CreateAccount(app); err != nil {
+		account, err := a.CreateAccount(app)
+		if err != nil {
 			// caso tenha erro ao armazenar no banco retorna 500
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -62,7 +63,7 @@ func PostAccount(app *app.App) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode("Conta criada com sucesso")
+		json.NewEncoder(w).Encode(account)
 
 	}
 }

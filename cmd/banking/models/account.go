@@ -25,7 +25,7 @@ type Account struct {
 	gorm.Model `json:"-"`
 	ID         uuid.UUID  `json:"id" gorm:"type:uuid"`
 	Name       string     `json:"name" validate:"required"`
-	CPF        string     `gorm:"unique" json:"cpf" validate:"required"`
+	CPF        string     `gorm:"unique" json:"cpf" validate:"required,len=11"`
 	Secret     string     `json:"secret" validate:"required"`
 	Balance    float64    `json:"balance" validate:"required"`
 	CreatedAt  time.Time  `json:"created_at"`
@@ -33,9 +33,9 @@ type Account struct {
 }
 
 // CreateAccount cria uma conta de usuário
-func (a *Account) CreateAccount(app *app.App) error {
+func (a *Account) CreateAccount(app *app.App) (*Account, error) {
 
-	result := app.DB.Client.Create(&Account{
+	account := &Account{
 		ID:        a.ID,
 		Name:      a.Name,
 		CPF:       a.CPF,
@@ -43,12 +43,14 @@ func (a *Account) CreateAccount(app *app.App) error {
 		Balance:   a.Balance,
 		CreatedAt: a.CreatedAt,
 		Transfers: a.Transfers,
-	})
-
-	if result.Error != nil {
-		return errors.New("Erro na criação da conta")
 	}
 
-	return nil
+	result := app.DB.Client.Create(account)
+
+	if result.Error != nil {
+		return nil, errors.New("Erro na criação da conta")
+	}
+
+	return account, nil
 
 }

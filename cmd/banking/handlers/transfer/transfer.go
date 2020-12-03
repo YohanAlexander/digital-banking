@@ -135,7 +135,8 @@ func PostTransfer(app *app.App) http.HandlerFunc {
 		}
 
 		// armazenando struct transfer no DB
-		if err := t.CreateTransfer(app); err != nil {
+		transfer, err := t.CreateTransfer(app)
+		if err != nil {
 			// caso tenha erro ao armazenar no banco retorna 500
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -143,7 +144,7 @@ func PostTransfer(app *app.App) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode("Transferência realizada com sucesso")
+		json.NewEncoder(w).Encode(transfer)
 
 	}
 }
